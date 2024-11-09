@@ -10,6 +10,10 @@ npm-debug.*
 *.orig.*
 web-build/
 
+ios
+
+.env
+
 # macOS
 .DS_Store
 
