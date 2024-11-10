@@ -1,51 +1,77 @@
 import { Menu } from "@/components/Menu";
 import { useCalendar } from "@/hooks/useCalendar";
-import { useRef, useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
-
-// import OpenAI from "openai";
-// const openai = new OpenAI({
-//   baseURL: "https://api.x.ai/v1",
-// });
-
-// const completion = await openai.chat.completions.create({
-//   model: "grok-beta",
-//   messages: [
-//     { role: "system", content: "You are Grok, a chatbot inspired by the Hitchhiker's Guide to the Galaxy." },
-//     {
-//       role: "user",
-//       content: "What is the meaning of life, the universe, and everything?",
-//     },
-//   ],
-// });
-
-// console.log(completion.choices[0].message);
+import { parseEventText } from "@/services/ai";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function App() {
-  const { calendars } = useCalendar();
-  const calendarNames = calendars.map((calendar) => calendar.title);
+  const { calendars, createEvent } = useCalendar();
   const [selectedCalendar, setSelectedCalendar] = useState<string | null>(null);
+  const [eventText, setEventText] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const textInputRef = useRef<TextInput>(null);
+  const handleSubmit = async () => {
+    if (!selectedCalendar || !eventText) return;
+
+    setLoading(true);
+    try {
+      const calendar = calendars.find((cal) => cal.title === selectedCalendar);
+      if (!calendar) throw new Error("Calendar not found");
+
+      const eventDetails = await parseEventText(eventText);
+      await createEvent(calendar.id, eventDetails);
+
+      setEventText("");
+      alert("Event created successfully!");
+    } catch (error) {
+      // @ts-ignore
+      alert("Failed to create event: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Menu options={calendarNames} onChange={setSelectedCalendar} />
+      <Text style={styles.title}>QuickCal</Text>
+
+      <Menu
+        options={calendars.map((cal) => cal.title)}
+        onChange={setSelectedCalendar}
+      />
+
       {selectedCalendar && (
-        <Text style={{ fontSize: 16 }}>
-          Selected calendar: {selectedCalendar}
+        <Text style={styles.selectedCalendar}>
+          Using calendar: {selectedCalendar}
         </Text>
       )}
-      <Text style={{ fontSize: 24, flexWrap: "wrap" }}>
-        What calendar event would you like to create? ✨
-      </Text>
+
       <TextInput
-        ref={textInputRef}
+        value={eventText}
+        onChangeText={setEventText}
         multiline
-        style={{ borderWidth: 2, fontSize: 28, width: 300 }}
-        onChangeText={console.log}
+        placeholder="Describe your event..."
+        style={styles.input}
       />
-      <Button onPress={console.log} title="Submit" />
+
+      <Pressable
+        style={[styles.button, !selectedCalendar && styles.buttonDisabled]}
+        onPress={handleSubmit}
+        disabled={!selectedCalendar || loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Create Event</Text>
+        )}
+      </Pressable>
     </View>
   );
 }
@@ -55,7 +81,41 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
-    // justifyContent: "space-around",
+    padding: 20,
     gap: 20,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    marginTop: 40,
+  },
+  selectedCalendar: {
+    fontSize: 16,
+    color: "#666",
+  },
+  input: {
+    width: "100%",
+    minHeight: 100,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    minWidth: 120,
+    alignItems: "center",
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

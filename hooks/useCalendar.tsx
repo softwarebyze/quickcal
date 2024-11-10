@@ -1,9 +1,9 @@
 import * as Calendar from "expo-calendar";
 import { useEffect, useState } from "react";
-import { Platform } from "react-native";
 
 export function useCalendar() {
   const [calendars, setCalendars] = useState<Calendar.Calendar[]>([]);
+
   useEffect(() => {
     (async () => {
       const { status } = await Calendar.requestCalendarPermissionsAsync();
@@ -15,28 +15,41 @@ export function useCalendar() {
       }
     })();
   }, []);
-  return { calendars, createCalendar };
-}
 
-async function getDefaultCalendarSource() {
-  const defaultCalendar = await Calendar.getDefaultCalendarAsync();
-  return defaultCalendar.source;
-}
+  const createEvent = async (
+    calendarId: string,
+    eventDetails: Partial<Calendar.Event>
+  ) => {
+    try {
+      // Ensure dates are proper Date objects
+      const startDate = new Date(eventDetails.startDate || "");
+      const endDate = new Date(eventDetails.endDate || startDate);
 
-async function createCalendar() {
-  const defaultCalendarSource =
-    Platform.OS === "ios"
-      ? await getDefaultCalendarSource()
-      : { isLocalAccount: true, name: "Expo Calendar" };
-  const newCalendarID = await Calendar.createCalendarAsync({
-    title: "Expo Calendar",
-    color: "blue",
-    entityType: Calendar.EntityTypes.EVENT,
-    // sourceId: defaultCalendarSource.id,
-    // source: defaultCalendarSource,
-    name: "internalCalendarName",
-    ownerAccount: "personal",
-    accessLevel: Calendar.CalendarAccessLevel.OWNER,
-  });
-  console.log(`Your new calendar ID is: ${newCalendarID}`);
+      const eventDetailsWithDefaults = {
+        calendarId,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        alarms: [
+          {
+            relativeOffset: -15, // 15 minutes before
+          },
+        ],
+        availability: Calendar.Availability.BUSY,
+        status: Calendar.EventStatus.CONFIRMED,
+        ...eventDetails,
+        startDate,
+        endDate,
+      };
+
+      const eventId = await Calendar.createEventInCalendarAsync(
+        eventDetailsWithDefaults
+      );
+
+      return eventId;
+    } catch (error) {
+      console.error("Failed to create event:", error);
+      throw error;
+    }
+  };
+
+  return { calendars, createEvent };
 }
