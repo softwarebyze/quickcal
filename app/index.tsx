@@ -40,7 +40,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>QuickCal</Text>
+      <Text style={styles.title}>quick<Text style={styles.titleAccent}>cal</Text></Text>
 
       <Menu
         options={calendars.map((cal) => cal.title)}
@@ -50,7 +50,7 @@ export default function App() {
 
       {selectedCalendar && (
         <Text style={styles.selectedCalendar}>
-          Using calendar: {selectedCalendar}
+          {selectedCalendar}
         </Text>
       )}
 
@@ -59,6 +59,7 @@ export default function App() {
         onChangeText={setEventText}
         multiline
         placeholder="Describe your event..."
+        placeholderTextColor="#666"
         style={styles.input}
       />
 
@@ -68,9 +69,9 @@ export default function App() {
         disabled={!selectedCalendar || loading}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#000" />
         ) : (
-          <Text style={styles.buttonText}>Create Event</Text>
+          <Text style={styles.buttonText}>Add Event</Text>
         )}
       </Pressable>
     </View>
@@ -80,43 +81,51 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#000",
     alignItems: "center",
     padding: 20,
-    gap: 20,
+    gap: 24,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    marginTop: 40,
+    fontSize: 42,
+    fontWeight: "200",
+    marginTop: 60,
+    color: "#fff",
+    letterSpacing: -1,
+  },
+  titleAccent: {
+    fontWeight: "600",
   },
   selectedCalendar: {
-    fontSize: 16,
-    color: "#666",
+    fontSize: 15,
+    color: "#888",
+    fontWeight: "500",
   },
   input: {
     width: "100%",
-    minHeight: 100,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
+    minHeight: 120,
+    backgroundColor: "#111",
+    borderRadius: 16,
+    padding: 16,
     fontSize: 16,
+    color: "#fff",
+    marginTop: 8,
   },
   button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    minWidth: 120,
+    backgroundColor: "#fff",
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+    minWidth: 140,
     alignItems: "center",
   },
   buttonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: "#333",
   },
   buttonText: {
-    color: "#fff",
+    color: "#000",
     fontSize: 16,
     fontWeight: "600",
+    letterSpacing: 0.5,
   },
 });
