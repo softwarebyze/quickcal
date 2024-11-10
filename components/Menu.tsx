@@ -5,16 +5,18 @@ export function Menu({
   options,
   onChange,
   selected,
+  title,
 }: {
   options: string[];
   onChange: (value: string) => void;
   selected: string;
+  title: string;
 }) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
         <Pressable style={styles.trigger}>
-          <Text style={styles.triggerText}>Select Calendar</Text>
+          <Text style={styles.triggerText}>{title}</Text>
         </Pressable>
       </DropdownMenu.Trigger>
 

@@ -40,18 +40,19 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>quick<Text style={styles.titleAccent}>cal</Text></Text>
+      <Text style={styles.title}>
+        quick<Text style={styles.titleAccent}>cal</Text>
+      </Text>
 
       <Menu
+        title={selectedCalendar ? "Change Calendar" : "Select a calendar"}
         options={calendars.map((cal) => cal.title)}
         onChange={setSelectedCalendar}
         selected={selectedCalendar || ""}
       />
 
       {selectedCalendar && (
-        <Text style={styles.selectedCalendar}>
-          {selectedCalendar}
-        </Text>
+        <Text style={styles.selectedCalendar}>{selectedCalendar}</Text>
       )}
 
       <TextInput
