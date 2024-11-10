@@ -45,6 +45,7 @@ export default function App() {
       <Menu
         options={calendars.map((cal) => cal.title)}
         onChange={setSelectedCalendar}
+        selected={selectedCalendar || ""}
       />
 
       {selectedCalendar && (
