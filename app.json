@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "quickcal",
-    "slug": "quickcal",
+    "name": "quickcalai",
+    "slug": "quickcalai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.quickcal.app"
+      "bundleIdentifier": "com.quickcalai.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
         "android.permission.READ_CALENDAR",
         "android.permission.WRITE_CALENDAR"
       ],
-      "package": "com.quickcal.app"
+      "package": "com.quickcalai.app"
     },
     "web": {
       "bundler": "metro",
@@ -60,7 +60,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "0feb3e6f-8efd-4f09-a407-01daf4f6d72e"
+        "projectId": "d583009a-6ca3-4eb4-beba-aca0021564e5"
       }
     }
   }
