@@ -16,18 +16,46 @@ Required fields:
 - timeZone: string (user's timezone)
 
 Optional fields:
-- location: string
-- notes: string
+- location: string (physical location or virtual meeting link)
+- notes: string (description, additional details)
 - allDay: boolean
-- alarms: Array of { relativeOffset: number }
-- recurrenceRule: { frequency: string, interval: number, endDate?: string }
+- availability: string ("busy", "free", "tentative", "unavailable")
+- status: string ("none", "confirmed", "tentative", "canceled")
+- url: string
+- alarms: Array of { 
+    absoluteDate?: string,
+    relativeOffset?: number,
+    method?: string
+  }
+- recurrenceRule: {
+    frequency: string ("daily", "weekly", "monthly", "yearly"),
+    interval?: number,
+    endDate?: string,
+    occurrence?: number,
+    daysOfTheWeek?: Array<{
+      dayOfTheWeek: number (1-7),
+      weekNumber?: number
+    }>,
+    daysOfTheMonth?: number[],
+    monthsOfTheYear?: number[],
+    weeksOfTheYear?: number[],
+    daysOfTheYear?: number[]
+  }
+- organizer?: string (organizer name)
+- organizerEmail?: string
+- guestsCanModify?: boolean
+- guestsCanInviteOthers?: boolean
+- guestsCanSeeGuests?: boolean
 
-Example input: "Schedule a team meeting tomorrow at 2pm for 1 hour"
+Example input: "Schedule a team meeting tomorrow at 2pm for 1 hour at Conference Room A"
 Example output: {
   "title": "Team Meeting",
   "startDate": "2024-02-14T14:00:00",
   "endDate": "2024-02-14T15:00:00",
   "timeZone": "America/New_York",
+  "location": "Conference Room A",
+  "availability": "busy",
+  "status": "confirmed",
   "alarms": [{ "relativeOffset": -15 }]
 }`;
 

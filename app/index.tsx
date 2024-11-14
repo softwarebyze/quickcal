@@ -1,10 +1,14 @@
 import { Menu } from "@/components/Menu";
 import { useCalendar } from "@/hooks/useCalendar";
 import { parseEventText } from "@/services/ai";
+import { CalendarDialogResultActions } from "expo-calendar";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
+  Platform,
   Pressable,
+  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
@@ -26,10 +30,15 @@ export default function App() {
       if (!calendar) throw new Error("Calendar not found");
 
       const eventDetails = await parseEventText(eventText);
-      await createEvent(calendar.id, eventDetails);
+      const { action } = await createEvent(calendar.id, eventDetails);
 
       setEventText("");
-      alert("Event created successfully!");
+      if (
+        Platform.OS === "ios" &&
+        action === CalendarDialogResultActions.done
+      ) {
+        alert("Event created successfully!");
+      }
     } catch (error) {
       // @ts-ignore
       alert("Failed to create event: " + error.message);
@@ -39,10 +48,27 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        quick<Text style={styles.titleAccent}>cal</Text>
-      </Text>
+    <SafeAreaView style={styles.container}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+        }}
+      >
+        <Text style={styles.title}>
+          quick<Text style={styles.titleAccent}>cal</Text>
+        </Text>
+        <Image
+          source={require("../assets/images/bolt.png")}
+          style={{
+            width: 28,
+            height: 45,
+            resizeMode: "contain",
+          }}
+        />
+      </View>
 
       <Menu
         title={selectedCalendar ? "Change Calendar" : "Select a calendar"}
@@ -75,7 +101,7 @@ export default function App() {
           <Text style={styles.buttonText}>Add Event</Text>
         )}
       </Pressable>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -90,7 +116,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 42,
     fontWeight: "200",
-    marginTop: 60,
     color: "#fff",
     letterSpacing: -1,
   },
