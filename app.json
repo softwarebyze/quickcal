@@ -19,8 +19,6 @@
       },
       "permissions": [
         "android.permission.READ_CALENDAR",
-        "android.permission.WRITE_CALENDAR",
-        "android.permission.READ_CALENDAR",
         "android.permission.WRITE_CALENDAR"
       ],
       "package": "com.quickcal.app"
@@ -56,6 +54,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0feb3e6f-8efd-4f09-a407-01daf4f6d72e"
+      }
     }
   }
 }
