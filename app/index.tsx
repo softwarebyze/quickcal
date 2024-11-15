@@ -1,12 +1,14 @@
-import { Menu } from "@/components/Menu";
+import { Header } from "@/components/Header";
+import { CalendarSelector } from "@/components/CalendarSelector";
+import { EventInput } from "@/components/EventInput";
+import { RemainingRequests } from "@/components/RemainingRequests";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useRequestsLimit } from "@/hooks/useRequestsLimit";
 import { parseEventText } from "@/services/ai";
-import { Calendar, CalendarDialogResultActions } from "expo-calendar";
+import { CalendarDialogResultActions } from "expo-calendar";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,93 +16,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  View,
 } from "react-native";
-
-interface CalendarSelectorProps {
-  selectedCalendar: string | null;
-  setSelectedCalendar: (calendar: string) => void;
-  calendars: Calendar[];
-}
-
-interface EventInputProps {
-  eventText: string;
-  setEventText: (text: string) => void;
-}
-
-interface RemainingRequestsProps {
-  remainingRequests: number;
-}
-
-const Header = () => (
-  <View
-    style={{
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
-    }}
-  >
-    <Text style={styles.title}>
-      quick<Text style={styles.titleAccent}>cal</Text>
-    </Text>
-    <Image
-      source={require("../assets/images/bolt.png")}
-      style={{ width: 28, height: 45, resizeMode: "contain" }}
-    />
-  </View>
-);
-
-const CalendarSelector = ({
-  selectedCalendar,
-  setSelectedCalendar,
-  calendars,
-}: CalendarSelectorProps) => (
-  <>
-    <Menu
-      title={selectedCalendar ? "Change Calendar" : "Select a calendar"}
-      options={calendars.map((cal) => cal.title)}
-      onChange={setSelectedCalendar}
-      selected={selectedCalendar || ""}
-    />
-    {selectedCalendar && (
-      <Text style={styles.selectedCalendar}>{selectedCalendar}</Text>
-    )}
-  </>
-);
-
-const EventInput = ({ eventText, setEventText }: EventInputProps) => (
-  <TextInput
-    value={eventText}
-    onChangeText={setEventText}
-    multiline
-    placeholder="Describe your event..."
-    placeholderTextColor="#666"
-    style={styles.input}
-  />
-);
-
-const RemainingRequests = ({ remainingRequests }: RemainingRequestsProps) => {
-  if (remainingRequests > 3) return null;
-
-  return (
-    <View style={styles.warningContainer}>
-      <Text style={styles.warningText} numberOfLines={1}>
-        {remainingRequests === 0
-          ? "No requests remaining"
-          : `${remainingRequests} ${
-              remainingRequests === 1 ? "request" : "requests"
-            } remaining`}
-      </Text>
-      <Pressable style={styles.upgradeButton}>
-        <Text style={styles.upgradeButtonText}>
-          {remainingRequests === 0 ? "Upgrade Now" : "Upgrade"}
-        </Text>
-      </Pressable>
-    </View>
-  );
-};
 
 export default function App() {
   const { calendars, createEvent } = useCalendar();
@@ -188,30 +104,6 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 24,
   },
-  title: {
-    fontSize: 42,
-    fontWeight: "200",
-    color: "#fff",
-    letterSpacing: -1,
-  },
-  titleAccent: {
-    fontWeight: "600",
-  },
-  selectedCalendar: {
-    fontSize: 15,
-    color: "#888",
-    fontWeight: "500",
-  },
-  input: {
-    width: "100%",
-    minHeight: 120,
-    backgroundColor: "#111",
-    borderRadius: 16,
-    padding: 16,
-    fontSize: 16,
-    color: "#fff",
-    marginTop: 8,
-  },
   button: {
     backgroundColor: "#fff",
     paddingVertical: 16,
@@ -228,37 +120,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     letterSpacing: 0.5,
-  },
-  warningContainer: {
-    position: "absolute",
-    bottom: Platform.OS === "ios" ? 120 : 80,
-    alignSelf: "center",
-    width: 320,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    backgroundColor: "#111",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  warningText: {
-    color: "#888",
-    fontSize: 14,
-    fontWeight: "500",
-    flex: 1,
-  },
-  upgradeButton: {
-    backgroundColor: "#222",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    flexShrink: 0,
-  },
-  upgradeButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
   },
 });
