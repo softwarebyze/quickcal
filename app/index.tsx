@@ -1,5 +1,6 @@
 import { Menu } from "@/components/Menu";
 import { useCalendar } from "@/hooks/useCalendar";
+import { useRequestsLimit } from "@/hooks/useRequestsLimit";
 import { parseEventText } from "@/services/ai";
 import { CalendarDialogResultActions } from "expo-calendar";
 import { useState } from "react";
@@ -17,12 +18,13 @@ import {
 
 export default function App() {
   const { calendars, createEvent } = useCalendar();
+  const { remainingRequests, decrementRequests } = useRequestsLimit();
   const [selectedCalendar, setSelectedCalendar] = useState<string | null>(null);
   const [eventText, setEventText] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!selectedCalendar || !eventText) return;
+    if (!selectedCalendar || !eventText || remainingRequests === 0) return;
 
     setLoading(true);
     try {
@@ -32,7 +34,9 @@ export default function App() {
       const eventDetails = await parseEventText(eventText);
       const { action } = await createEvent(calendar.id, eventDetails);
 
+      decrementRequests();
       setEventText("");
+
       if (
         Platform.OS === "ios" &&
         action === CalendarDialogResultActions.done
@@ -40,8 +44,8 @@ export default function App() {
         alert("Event created successfully!");
       }
     } catch (error) {
-      // @ts-ignore
-      alert("Failed to create event: " + error.message);
+      if (error instanceof Error)
+        alert("Failed to create event: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -91,16 +95,45 @@ export default function App() {
       />
 
       <Pressable
-        style={[styles.button, !selectedCalendar && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          (!selectedCalendar || remainingRequests === 0) &&
+            styles.buttonDisabled,
+        ]}
         onPress={handleSubmit}
-        disabled={!selectedCalendar || loading}
+        disabled={!selectedCalendar || loading || remainingRequests === 0}
       >
         {loading ? (
           <ActivityIndicator color="#000" />
         ) : (
-          <Text style={styles.buttonText}>Add Event</Text>
+          <Text style={styles.buttonText}>
+            {remainingRequests === 0 ? "Upgrade to Continue" : "Add Event"}
+          </Text>
         )}
       </Pressable>
+
+      {remainingRequests !== null &&
+        remainingRequests <= 3 &&
+        remainingRequests > 0 && (
+          <View style={styles.warningContainer}>
+            <Text style={styles.warningText}>
+              {remainingRequests}{" "}
+              {remainingRequests === 1 ? "request" : "requests"} remaining
+            </Text>
+            <Pressable style={styles.upgradeButton}>
+              <Text style={styles.upgradeButtonText}>Upgrade</Text>
+            </Pressable>
+          </View>
+        )}
+
+      {remainingRequests === 0 && (
+        <View style={styles.warningContainer}>
+          <Text style={styles.warningText}>No requests remaining</Text>
+          <Pressable style={styles.upgradeButton}>
+            <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -153,5 +186,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     letterSpacing: 0.5,
+  },
+  warningContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#111",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    position: "absolute",
+    bottom: 40,
+  },
+  warningText: {
+    color: "#888",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  upgradeButton: {
+    backgroundColor: "#222",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  upgradeButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
