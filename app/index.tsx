@@ -2,19 +2,105 @@ import { Menu } from "@/components/Menu";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useRequestsLimit } from "@/hooks/useRequestsLimit";
 import { parseEventText } from "@/services/ai";
-import { CalendarDialogResultActions } from "expo-calendar";
+import { Calendar, CalendarDialogResultActions } from "expo-calendar";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+
+interface CalendarSelectorProps {
+  selectedCalendar: string | null;
+  setSelectedCalendar: (calendar: string) => void;
+  calendars: Calendar[];
+}
+
+interface EventInputProps {
+  eventText: string;
+  setEventText: (text: string) => void;
+}
+
+interface RemainingRequestsProps {
+  remainingRequests: number;
+}
+
+const Header = () => (
+  <View
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+    }}
+  >
+    <Text style={styles.title}>
+      quick<Text style={styles.titleAccent}>cal</Text>
+    </Text>
+    <Image
+      source={require("../assets/images/bolt.png")}
+      style={{ width: 28, height: 45, resizeMode: "contain" }}
+    />
+  </View>
+);
+
+const CalendarSelector = ({
+  selectedCalendar,
+  setSelectedCalendar,
+  calendars,
+}: CalendarSelectorProps) => (
+  <>
+    <Menu
+      title={selectedCalendar ? "Change Calendar" : "Select a calendar"}
+      options={calendars.map((cal) => cal.title)}
+      onChange={setSelectedCalendar}
+      selected={selectedCalendar || ""}
+    />
+    {selectedCalendar && (
+      <Text style={styles.selectedCalendar}>{selectedCalendar}</Text>
+    )}
+  </>
+);
+
+const EventInput = ({ eventText, setEventText }: EventInputProps) => (
+  <TextInput
+    value={eventText}
+    onChangeText={setEventText}
+    multiline
+    placeholder="Describe your event..."
+    placeholderTextColor="#666"
+    style={styles.input}
+  />
+);
+
+const RemainingRequests = ({ remainingRequests }: RemainingRequestsProps) => {
+  if (remainingRequests > 3) return null;
+
+  return (
+    <View style={styles.warningContainer}>
+      <Text style={styles.warningText} numberOfLines={1}>
+        {remainingRequests === 0
+          ? "No requests remaining"
+          : `${remainingRequests} ${
+              remainingRequests === 1 ? "request" : "requests"
+            } remaining`}
+      </Text>
+      <Pressable style={styles.upgradeButton}>
+        <Text style={styles.upgradeButtonText}>
+          {remainingRequests === 0 ? "Upgrade Now" : "Upgrade"}
+        </Text>
+      </Pressable>
+    </View>
+  );
+};
 
 export default function App() {
   const { calendars, createEvent } = useCalendar();
@@ -53,87 +139,43 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, width: "100%" }}
       >
-        <Text style={styles.title}>
-          quick<Text style={styles.titleAccent}>cal</Text>
-        </Text>
-        <Image
-          source={require("../assets/images/bolt.png")}
-          style={{
-            width: 28,
-            height: 45,
-            resizeMode: "contain",
-          }}
-        />
-      </View>
-
-      <Menu
-        title={selectedCalendar ? "Change Calendar" : "Select a calendar"}
-        options={calendars.map((cal) => cal.title)}
-        onChange={setSelectedCalendar}
-        selected={selectedCalendar || ""}
-      />
-
-      {selectedCalendar && (
-        <Text style={styles.selectedCalendar}>{selectedCalendar}</Text>
-      )}
-
-      <TextInput
-        value={eventText}
-        onChangeText={setEventText}
-        multiline
-        placeholder="Describe your event..."
-        placeholderTextColor="#666"
-        style={styles.input}
-      />
-
-      <Pressable
-        style={[
-          styles.button,
-          (!selectedCalendar || remainingRequests === 0) &&
-            styles.buttonDisabled,
-        ]}
-        onPress={handleSubmit}
-        disabled={!selectedCalendar || loading || remainingRequests === 0}
-      >
-        {loading ? (
-          <ActivityIndicator color="#000" />
-        ) : (
-          <Text style={styles.buttonText}>
-            {remainingRequests === 0 ? "Upgrade to Continue" : "Add Event"}
-          </Text>
-        )}
-      </Pressable>
-
-      {remainingRequests !== null &&
-        remainingRequests <= 3 &&
-        remainingRequests > 0 && (
-          <View style={styles.warningContainer}>
-            <Text style={styles.warningText}>
-              {remainingRequests}{" "}
-              {remainingRequests === 1 ? "request" : "requests"} remaining
-            </Text>
-            <Pressable style={styles.upgradeButton}>
-              <Text style={styles.upgradeButtonText}>Upgrade</Text>
-            </Pressable>
-          </View>
-        )}
-
-      {remainingRequests === 0 && (
-        <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>No requests remaining</Text>
-          <Pressable style={styles.upgradeButton}>
-            <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ gap: 24, alignItems: "center" }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Header />
+          <CalendarSelector
+            selectedCalendar={selectedCalendar}
+            setSelectedCalendar={setSelectedCalendar}
+            calendars={calendars}
+          />
+          <EventInput eventText={eventText} setEventText={setEventText} />
+          <Pressable
+            style={[
+              styles.button,
+              (!selectedCalendar || remainingRequests === 0) &&
+                styles.buttonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={!selectedCalendar || loading || remainingRequests === 0}
+          >
+            {loading ? (
+              <ActivityIndicator color="#000" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {remainingRequests === 0 ? "Upgrade to Continue" : "Add Event"}
+              </Text>
+            )}
           </Pressable>
-        </View>
-      )}
+        </ScrollView>
+
+        <RemainingRequests remainingRequests={remainingRequests} />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -188,26 +230,31 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   warningContainer: {
+    position: "absolute",
+    bottom: Platform.OS === "ios" ? 120 : 80,
+    alignSelf: "center",
+    width: 320,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 12,
     backgroundColor: "#111",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
-    position: "absolute",
-    bottom: 40,
   },
   warningText: {
     color: "#888",
     fontSize: 14,
     fontWeight: "500",
+    flex: 1,
   },
   upgradeButton: {
     backgroundColor: "#222",
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
+    flexShrink: 0,
   },
   upgradeButtonText: {
     color: "#fff",
